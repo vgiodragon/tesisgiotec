@@ -1,5 +1,6 @@
 package com.giotec.tesis;
 
+import com.giotec.tesis.Data.TemperatureSensed;
 import org.apache.flink.api.java.functions.KeySelector;
 import org.apache.flink.cep.CEP;
 import org.apache.flink.cep.PatternSelectFunction;
@@ -34,14 +35,14 @@ public class CEPMonitor {
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment env = StreamExecutionEnvironment
-                //.getExecutionEnvironment();
+                .getExecutionEnvironment();
 
-                .createLocalEnvironment();
+                //createLocalEnvironment();
 
 
         env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
 
-        DataStream<EventSensed> sensadoInput0 = env.addSource(new MiMQTTSource2())
+        DataStream<EventSensed> sensadoInput0 = env.addSource(new MiMQTTSource())
                 .keyBy((event) -> event.getTopic())
                 /*.keyBy(new KeySelector<EventSensed, String>() {
                     @Override
@@ -59,15 +60,17 @@ public class CEPMonitor {
         //AfterMatchSkipStrategy skipStrategy = AfterMatchSkipStrategy.skipPastLastEvent();
         Pattern<EventSensed,?> TempSI = Pattern.<EventSensed>
                 begin("FirstSensadoEvent")//,skipStrategy)
-                .subtype(EventSensed.class).where(new SimpleCondition<EventSensed>() {
+                .subtype(TemperatureSensed.class)
+                .where(new SimpleCondition<TemperatureSensed>() {
                     @Override
-                    public boolean filter(EventSensed eventSensed) throws Exception {
-                        return eventSensed.getValue()>30;
+                    public boolean filter(TemperatureSensed temperatureSensed) throws Exception {
+                        return temperatureSensed.getValue()>30;
                     }
-                })
-                .subtype(EventSensed.class).next("SecondSensadoEvent").where(new SimpleCondition<EventSensed>() {
+                }).next("SecondSensadoEvent")
+                .subtype(TemperatureSensed.class)
+                .where(new SimpleCondition<TemperatureSensed>() {
                     @Override
-                    public boolean filter(EventSensed eventSensed) throws Exception {
+                    public boolean filter(TemperatureSensed eventSensed) throws Exception {
                         return eventSensed.getValue()>30;
                     }
                 })
@@ -136,7 +139,7 @@ public class CEPMonitor {
                             String timestamp = jsonObject.getString("timestamp");
                             Double value= jsonObject.getDouble("value");
                             if(re_type.length>2 && !timestamp.equals("")){
-                                ctx.collect(new EventSensed(value,timestamp,topic,re_type[2]));
+                                ctx.collect(new TemperatureSensed(value,timestamp,topic,re_type[2]));
                             }
                         }catch (JSONException e) {
                             System.out.println("No es JSON:"+new String(mqttMessage.getPayload())+"_"+e.toString() );
