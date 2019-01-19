@@ -44,7 +44,9 @@ public class Utils {
             options.setCleanSession(false);
             options.setUserName(getUser());
             options.setPassword(getPassword().toCharArray());
+            options.setAutomaticReconnect(true);
             clientLocal.connect(options);
+            System.out.println("MQTT clientLocal conectando");
         } catch (MqttException e) {
             System.out.println("Excepcion Connectando Local "+e.toString());
         }
@@ -53,23 +55,29 @@ public class Utils {
     public static void PublicarLocal(String nameAlerta, String mensaje){
         MqttMessage messageMQTT = new MqttMessage();
         messageMQTT.setPayload(mensaje.getBytes());
+        System.out.println("publicando "+mensaje);
         if(clientLocal!=null){
             try {
                 clientLocal.publish(nameAlerta, messageMQTT);
             } catch (MqttException e) {
                 System.out.println("Excepcion PublicarLocal  "+e.toString());
                 try {
-                    if(!clientLocal.isConnected()) clientLocal.reconnect();
+                    if(!clientLocal.isConnected()) Thread.sleep(1000);
                     clientLocal.publish(nameAlerta, messageMQTT);
                 } catch (MqttException e1) {
+                    e1.printStackTrace();
+                } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
             }
         }else {
             ConnectClient_Local("tcp://localhost");
             try {
+                Thread.sleep(500);
                 clientLocal.publish(nameAlerta, messageMQTT);
             } catch (MqttException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }
@@ -84,6 +92,7 @@ public class Utils {
             options.setCleanSession(false);
             options.setUserName(getUser());
             options.setPassword(getPassword().toCharArray());
+            options.setAutomaticReconnect(true);
             clientGlobal.connect(options);
         } catch (MqttException e) {
             System.out.println("Excepcion Connectando Local "+e.toString());
@@ -98,19 +107,24 @@ public class Utils {
             try {
                 clientGlobal.publish(nameAlerta, messageMQTT);
             } catch (MqttException e) {
-                System.out.println("Excepcion PublicarGlobal "+e.toString());
+                System.out.println("Excepcion PublicarLocal  "+e.toString());
                 try {
-                    if(!clientGlobal.isConnected())clientGlobal.reconnect();
+                    if(!clientGlobal.isConnected()) Thread.sleep(1000);
                     clientGlobal.publish(nameAlerta, messageMQTT);
                 } catch (MqttException e1) {
+                    e1.printStackTrace();
+                } catch (InterruptedException e1) {
                     e1.printStackTrace();
                 }
             }
         }else {
             Utils.ConnectClient_Global("tcp://190.119.192.232");
             try {
+                Thread.sleep(500);
                 clientGlobal.publish(nameAlerta, messageMQTT);
             } catch (MqttException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
                 e.printStackTrace();
             }
         }

@@ -8,31 +8,34 @@ import java.util.Date;
 
 public class Alarma {
 
-    String timestamp1;
-    Double val1, val2;
-    String origintopic;
-
+    private String topic;
     public Alarma() {
     }
 
-    public Alarma(String timestamp1, Double val1, Double val2, String origintopic, String topic) {
-        this.timestamp1 = timestamp1;
-        this.val1 = val1;
-        this.val2 = val2;
-        this.origintopic = origintopic;
-        Utils.PublicarLocal(topic,getJson());
+    public Alarma(String topic, EventSensed eventSensed,EventSensed eventSensed2) {
+        Utils.PublicarLocal(topic,getJson(eventSensed,eventSensed2));
         //Utils.PublicarGlobal(topic,getJson());
     }
 
-    public String getJson(){
+    public String getJson(EventSensed eventSensed,EventSensed eventSensed2){
         JSONObject jsonObject = new JSONObject();
         try {
-            jsonObject.put("timestamp1",timestamp1);
+            jsonObject.put("timestamp1",eventSensed.getTimestamp());
+            jsonObject.put("timestamp2",eventSensed2.getTimestamp());
             jsonObject.put("Hora", ""+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").format(new Date()));
-            jsonObject.put("origintopic",origintopic);
-            jsonObject.put("val1",val1);
-            jsonObject.put("val2",val2);
+            jsonObject.put("origintopic",eventSensed.getTopic());
+            jsonObject.put("val1",eventSensed.getValue());
+            jsonObject.put("Hpaso21",eventSensed.getHpaso2());
+            jsonObject.put("Hpaso22",eventSensed2.getHpaso2());
         } catch (JSONException e) {  System.out.println("Error formando el JSON de alarma " +e.toString());  }
         return jsonObject.toString();
+    }
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
     }
 }
