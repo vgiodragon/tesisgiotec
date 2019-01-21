@@ -39,7 +39,7 @@ public class CEPMonitor {
                 //createLocalEnvironment();
 
 
-        env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
 
         DataStream<EventSensed> sensadoInput0 = env.addSource(new MiMQTTSource())
                 //.keyBy((event) -> event.getTopic())
@@ -50,12 +50,12 @@ public class CEPMonitor {
                         return sensedEvent.getTopic();
                     }
                 })
-                /*.assignTimestampsAndWatermarks(new AscendingTimestampExtractor<EventSensed>() {
+                .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<EventSensed>() {
                     @Override
                     public long extractAscendingTimestamp(EventSensed element) {
                         return StringDatetoLong(element.getTimestamp());
                     }
-                })*/
+                })
                 ;
         //AfterMatchSkipStrategy skipStrategy = AfterMatchSkipStrategy.skipPastLastEvent();
         Pattern<EventSensed,?> TempSI = Pattern.<EventSensed>
@@ -102,7 +102,6 @@ public class CEPMonitor {
             }
         });
         System.out.println("Ready!");
-        //Utils.ConnectClient_Local("tcp://localhost");
 
         env.execute("GioTec SAC - Tesis - Smartcity ");
 

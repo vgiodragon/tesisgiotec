@@ -8,10 +8,10 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 public class Utils {
     private static String user = "Raspberry";
     private static String password = "yrrebpsaR";
-    private static String topicSimple1= "/Alarm1/Alarm1/Alarm1";
-    private static String topicSimple2= "/Alarm2/Alarm2/Alarm2";
-    private static String topicSimple3= "/Alarm3/Alarm3/Alarm3";
-    private static String topicSimple4= "/Alarm4/Alarm4/Alarm4";
+    private static String topicSimple1= "Alarm1/Alarm1/Alarm1";
+    private static String topicSimple2= "Alarm2/Alarm2/Alarm2";
+    private static String topicSimple3= "Alarm3/Alarm3/Alarm3";
+    private static String topicSimple4= "Alarm4/Alarm4/Alarm4";
     private static MqttClient clientLocal ;
     private static MqttClient clientGlobal ;
 
@@ -41,7 +41,7 @@ public class Utils {
             clientLocal = new MqttClient(serverURI, MqttClient.generateClientId());
             MqttConnectOptions options = new MqttConnectOptions();
             options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
-            options.setCleanSession(false);
+            options.setCleanSession(true);
             options.setUserName(getUser());
             options.setPassword(getPassword().toCharArray());
             options.setAutomaticReconnect(true);
@@ -55,8 +55,9 @@ public class Utils {
     public static void PublicarLocal(String nameAlerta, String mensaje){
         MqttMessage messageMQTT = new MqttMessage();
         messageMQTT.setPayload(mensaje.getBytes());
-        System.out.println("publicando "+mensaje);
+        //System.out.println("publicando PublicarLocal "+mensaje);
         if(clientLocal!=null){
+            System.out.println("publicando"+clientLocal.isConnected()+" PublicarLocal "+mensaje);
             try {
                 clientLocal.publish(nameAlerta, messageMQTT);
             } catch (MqttException e) {
@@ -65,19 +66,25 @@ public class Utils {
                     if(!clientLocal.isConnected()) Thread.sleep(1000);
                     clientLocal.publish(nameAlerta, messageMQTT);
                 } catch (MqttException e1) {
+                    System.out.println("Excepcion MqttException  "+e1.toString());
                     e1.printStackTrace();
                 } catch (InterruptedException e1) {
+                    System.out.println("Excepcion InterruptedException  "+e1.toString());
                     e1.printStackTrace();
                 }
             }
         }else {
+            System.out.println("Excepcion Conectando!!  ");
             ConnectClient_Local("tcp://localhost");
             try {
-                Thread.sleep(500);
+                Thread.sleep(1000);
                 clientLocal.publish(nameAlerta, messageMQTT);
+                System.out.println("Excepcion publish1  ");
             } catch (MqttException e) {
+                System.out.println("Excepcion MqttException PublicarLocal  "+e.toString());
                 e.printStackTrace();
             } catch (InterruptedException e) {
+                System.out.println("Excepcion InterruptedException PublicarLocal  "+e.toString());
                 e.printStackTrace();
             }
         }
@@ -89,7 +96,7 @@ public class Utils {
             clientGlobal = new MqttClient(serverURI, MqttClient.generateClientId());
             MqttConnectOptions options = new MqttConnectOptions();
             options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
-            options.setCleanSession(false);
+            options.setCleanSession(true);
             options.setUserName(getUser());
             options.setPassword(getPassword().toCharArray());
             options.setAutomaticReconnect(true);

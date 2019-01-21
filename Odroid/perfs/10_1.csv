@@ -1,0 +1,2 @@
+horaEjecucion,tiempo(segundos),dcache_load_misses,dcache_loads,L1_dcache_stores,LLC_loads,instructions,cache_misses,all_per_cache,cache_references,branches,per_cpu
+08:26:57.477847448,0.25,1659733,52070706,973300,485747,31738264,7065155,111160,3.624,3067590,1529470,

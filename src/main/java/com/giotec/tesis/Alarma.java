@@ -7,7 +7,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Alarma {
-
     private String topic;
     public Alarma() {
     }
