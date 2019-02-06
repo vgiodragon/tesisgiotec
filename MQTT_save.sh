@@ -16,4 +16,3 @@ echo "Fin $mhora "
 python3 dropDatabase.py
 
 kill $suscriber
-
