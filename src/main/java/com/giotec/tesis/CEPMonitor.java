@@ -31,31 +31,18 @@ import static java.lang.Thread.sleep;
 
 public class CEPMonitor {
 
-    public static final int timeSentSec = 5;
+    public static final int timeSentSec = 20;
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment env = StreamExecutionEnvironment
                 .getExecutionEnvironment();
-                //createLocalEnvironment();
 
 
-        env.setStreamTimeCharacteristic(TimeCharacteristic.EventTime);
+        env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
+
 
         DataStream<EventSensed> sensadoInput0 = env.addSource(new MiMQTTSource())
-                //.keyBy((event) -> event.getTopic())
-                .keyBy(new KeySelector<EventSensed, String>() {
-                    @Override
-                    public String getKey(EventSensed sensedEvent) throws Exception {
-                        sensedEvent.setHpaso2(""+new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SS").format(new Date()));
-                        return sensedEvent.getTopic();
-                    }
-                })
-                .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<EventSensed>() {
-                    @Override
-                    public long extractAscendingTimestamp(EventSensed element) {
-                        return StringDatetoLong(element.getTimestamp());
-                    }
-                })
+                .keyBy((event) -> event.getTopic())
                 ;
         //AfterMatchSkipStrategy skipStrategy = AfterMatchSkipStrategy.skipPastLastEvent();
         Pattern<EventSensed,?> TempSI = Pattern.<EventSensed>
@@ -74,18 +61,6 @@ public class CEPMonitor {
                         return eventSensed.getValue()>30;
                     }
                 })
-                /*.where(new IterativeCondition<EventSensed>() {
-                    @Override
-                    public boolean filter(EventSensed sensedEvent, Context<EventSensed> context) throws Exception {
-                        for (EventSensed msensedevent : context.getEventsForPattern("FirstSensadoEvent")){
-//                                if(msensedevent.getParameter().equals(sensedEvent.getParameter())){
-                            return Utils.DetecTemperatureAlarm(
-                                    msensedevent.getValue(),sensedEvent.getValue());
-                            //                              }
-                        }
-                        return false;
-                    }
-                })*/
                 .within(Time.seconds(timeSentSec*3/2));
 
         PatternStream<EventSensed> patternStreamClose = CEP.pattern(
@@ -100,8 +75,9 @@ public class CEPMonitor {
                 //String timestamp1, Double val1, Double val2, String origintopic, String topic)
                 return new Alarma(Utils.getTopicSimple1(), sensedEvent,sensedEvent2);
             }
-        });
+        }).setParallelism(75);
         System.out.println("Ready!");
+        //Utils.ConnectClient_Local("tcp://localhost");
 
         env.execute("GioTec SAC - Tesis - Smartcity ");
 
@@ -243,6 +219,5 @@ public class CEPMonitor {
         Timestamp timestamp = new Timestamp(date.getTime());
         return timestamp.getTime();
     }
-
 
 }

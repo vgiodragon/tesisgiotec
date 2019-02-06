@@ -1,5 +1,9 @@
 package com.giotec.tesis;
 
+import org.eclipse.paho.client.mqttv3.MqttClient;
+import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
+import org.eclipse.paho.client.mqttv3.MqttException;
+import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -8,12 +12,21 @@ import java.util.Date;
 
 public class Alarma {
     private String topic;
+    private static int hilo=0;
     public Alarma() {
     }
 
     public Alarma(String topic, EventSensed eventSensed,EventSensed eventSensed2) {
-        Utils.PublicarLocal(topic,getJson(eventSensed,eventSensed2));
-        //Utils.PublicarGlobal(topic,getJson());
+        //Publicar(topic,getJson(eventSensed,eventSensed2),"tcp://localhost");
+        int mhilo=getCurrentHilo();
+        String mjson=getJson(eventSensed,eventSensed2);
+        Utils.PublicarLocal(mhilo,topic,mjson);
+        Utils.PublicarGlobal(mhilo,topic,mjson);
+    }
+
+    public synchronized int getCurrentHilo(){
+        hilo=(hilo++)%Utils.getMaxihilos();
+        return hilo;
     }
 
     public String getJson(EventSensed eventSensed,EventSensed eventSensed2){
@@ -36,5 +49,25 @@ public class Alarma {
 
     public void setTopic(String topic) {
         this.topic = topic;
+    }
+
+    public void Publicar(String nameAlerta,String mensaje,String server){
+        MqttClient client = null;
+        try {
+            client = new MqttClient(server, MqttClient.generateClientId());
+            MqttConnectOptions options = new MqttConnectOptions();
+            options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
+            options.setUserName(Utils.getUser());
+            options.setPassword(Utils.getPassword().toCharArray());
+
+            MqttMessage messageMQTT = new MqttMessage();
+            messageMQTT.setPayload(mensaje.getBytes());
+            client.connect(options);
+            client.publish(nameAlerta, messageMQTT);
+
+            client.disconnect();
+        } catch (MqttException e) {
+            System.out.println("Excepcion Alerta "+e.toString());
+        }
     }
 }

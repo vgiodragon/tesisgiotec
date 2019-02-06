@@ -49,7 +49,7 @@ def main():
     _thread.start_new_thread( connectar, (client2, "192.168.1.106",) ) #publico en local!
 
 #    client.connect("localhost", 1883, 60)
-    time.sleep(650)
+    time.sleep(720)
 
 if __name__ == "__main__":
     main()
