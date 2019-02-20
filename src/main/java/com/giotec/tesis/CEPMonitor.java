@@ -31,31 +31,18 @@ import static java.lang.Thread.sleep;
 
 public class CEPMonitor {
 
-    public static final int timeSentSec = 5;
+    public static final int timeSentSec = 20;
 
     public static void main(String[] args) throws Exception {
         final StreamExecutionEnvironment env = StreamExecutionEnvironment
                 .getExecutionEnvironment();
 
-                //createLocalEnvironment();
-
 
         env.setStreamTimeCharacteristic(TimeCharacteristic.ProcessingTime);
 
+
         DataStream<EventSensed> sensadoInput0 = env.addSource(new MiMQTTSource())
                 .keyBy((event) -> event.getTopic())
-                /*.keyBy(new KeySelector<EventSensed, String>() {
-                    @Override
-                    public String getKey(EventSensed sensedEvent) throws Exception {
-                        return sensedEvent.getTopic();
-                    }
-                })
-                .assignTimestampsAndWatermarks(new AscendingTimestampExtractor<EventSensed>() {
-                    @Override
-                    public long extractAscendingTimestamp(EventSensed element) {
-                        return StringDatetoLong(element.getTimestamp());
-                    }
-                })*/
                 ;
         //AfterMatchSkipStrategy skipStrategy = AfterMatchSkipStrategy.skipPastLastEvent();
         Pattern<EventSensed,?> TempSI = Pattern.<EventSensed>
@@ -74,19 +61,7 @@ public class CEPMonitor {
                         return eventSensed.getValue()>30;
                     }
                 })
-                /*.where(new IterativeCondition<EventSensed>() {
-                    @Override
-                    public boolean filter(EventSensed sensedEvent, Context<EventSensed> context) throws Exception {
-                        for (EventSensed msensedevent : context.getEventsForPattern("FirstSensadoEvent")){
-//                                if(msensedevent.getParameter().equals(sensedEvent.getParameter())){
-                            return Utils.DetecTemperatureAlarm(
-                                    msensedevent.getValue(),sensedEvent.getValue());
-                            //                              }
-                        }
-                        return false;
-                    }
-                })*/
-                .within(Time.seconds(timeSentSec*5/4));
+                .within(Time.seconds(timeSentSec*3/2));
 
         PatternStream<EventSensed> patternStreamClose = CEP.pattern(
                 sensadoInput0
@@ -96,15 +71,13 @@ public class CEPMonitor {
             public Alarma select(Map<String, List<EventSensed>> map) throws Exception {
                 EventSensed sensedEvent= map.get("FirstSensadoEvent").get(0);
                 EventSensed sensedEvent2 = map.get("SecondSensadoEvent").get(0);
-                System.out.println("Alarma generada " + sensedEvent.getTopic());
+                //System.out.println("Alarma generada " + sensedEvent.getTopic());
                 //String timestamp1, Double val1, Double val2, String origintopic, String topic)
-                return new Alarma(sensedEvent.getTimestamp(),
-                        sensedEvent.getValue(),sensedEvent2.getValue(),
-                        sensedEvent.getTopic(),Utils.getTopicSimple1());
+                return new Alarma(Utils.getTopicSimple1(), sensedEvent,sensedEvent2);
             }
-        });
+        });//.rebalance();
         System.out.println("Ready!");
-        Utils.ConnectClient_Local("tcp://localhost");
+        //Utils.ConnectClient_Local("tcp://localhost");
 
         env.execute("GioTec SAC - Tesis - Smartcity ");
 
@@ -132,7 +105,7 @@ public class CEPMonitor {
                     }
                     @Override
                     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-                        System.out.println("topic: "+topic);
+                        //System.out.println("topic: "+topic);
                         String re_type[] = topic.split("/");
                         try {
                             JSONObject jsonObject = new JSONObject(new String(mqttMessage.getPayload()));
@@ -196,7 +169,7 @@ public class CEPMonitor {
                     }
                     @Override
                     public void messageArrived(String topic, MqttMessage mqttMessage) throws Exception {
-                        System.out.println("topic: "+topic);
+                        //System.out.println("topic: "+topic);
                         String re_type[] = topic.split("/");
                         try {
                             JSONObject jsonObject = new JSONObject(new String(mqttMessage.getPayload()));
@@ -246,6 +219,5 @@ public class CEPMonitor {
         Timestamp timestamp = new Timestamp(date.getTime());
         return timestamp.getTime();
     }
-
 
 }

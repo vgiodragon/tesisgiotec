@@ -1,19 +1,23 @@
 package com.giotec.tesis;
 
-import org.eclipse.paho.client.mqttv3.MqttClient;
-import org.eclipse.paho.client.mqttv3.MqttConnectOptions;
-import org.eclipse.paho.client.mqttv3.MqttException;
-import org.eclipse.paho.client.mqttv3.MqttMessage;
+import org.eclipse.paho.client.mqttv3.*;
+
+import java.util.concurrent.Semaphore;
 
 public class Utils {
     private static String user = "Raspberry";
     private static String password = "yrrebpsaR";
-    private static String topicSimple1= "/Alarm1/Alarm1/Alarm1";
-    private static String topicSimple2= "/Alarm2/Alarm2/Alarm2";
-    private static String topicSimple3= "/Alarm3/Alarm3/Alarm3";
-    private static String topicSimple4= "/Alarm4/Alarm4/Alarm4";
-    private static MqttClient clientLocal ;
-    private static MqttClient clientGlobal ;
+    private static String topicSimple1= "Alarm1/Alarm1/Alarm1";
+    private static String topicSimple2= "Alarm2/Alarm2/Alarm2";
+    private static String topicSimple3= "Alarm3/Alarm3/Alarm3";
+    private static String topicSimple4= "Alarm4/Alarm4/Alarm4";
+    private static int maxihilos = 50;
+    private static int maxiAlarms = 200;
+    private static MqttAsyncClient clientLocal[] = new MqttAsyncClient[50];
+    private static MqttAsyncClient clientGlobal[] = new MqttAsyncClient[50];
+    private static Semaphore semaphore = new Semaphore(230);
+    //private static MqttAsyncClient clientLocal[] = Connect_all("tcp://localhost");//new MqttAsyncClient[50];
+    //private static MqttAsyncClient clientGlobal[] = Connect_all("tcp://190.119.192.232");//new MqttAsyncClient[50];
 
     public static boolean DetecTemperatureAlarm(double val1,double val2){
         return ( val1>30 && val2>val1) ? true: false;
@@ -36,81 +40,131 @@ public class Utils {
         return password;
     }
 
-    public static void ConnectClient_Local(String serverURI){
+    public static int getMaxiAlarms() {
+        return maxiAlarms;
+    }
+
+    public static int getMaxihilos() {
+        return maxihilos;
+    }
+
+    public static void setMaxihilos(int maxihilos) {
+        Utils.maxihilos = maxihilos;
+    }
+
+    public static void ConnectClient_Local(int hilo,String serverURI){
         try {
-            clientLocal = new MqttClient(serverURI, MqttClient.generateClientId());
+            clientLocal[hilo] = new MqttAsyncClient(serverURI, MqttClient.generateClientId());
             MqttConnectOptions options = new MqttConnectOptions();
             options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
-            options.setCleanSession(false);
+            options.setCleanSession(true);
             options.setUserName(getUser());
             options.setPassword(getPassword().toCharArray());
-            clientLocal.connect(options);
+            options.setAutomaticReconnect(true);
+            options.setMaxInflight(getMaxiAlarms());
+            clientLocal[hilo].connect(options);
+            System.out.println("MQTT clientLocal conectando");
         } catch (MqttException e) {
             System.out.println("Excepcion Connectando Local "+e.toString());
         }
     }
 
-    public static void PublicarLocal(String nameAlerta, String mensaje){
+    public static void PublicarLocal(int hilo, String nameAlerta, String mensaje){
         MqttMessage messageMQTT = new MqttMessage();
         messageMQTT.setPayload(mensaje.getBytes());
-        if(clientLocal!=null){
+        //System.out.println("publicando PublicarLocal "+mensaje);
+        if(clientLocal[hilo]!=null){
+            //System.out.println("publicando"+clientLocal[hilo].isConnected()+" PublicarLocal "+mensaje);
             try {
-                clientLocal.publish(nameAlerta, messageMQTT);
+                clientLocal[hilo].publish(nameAlerta, messageMQTT);
             } catch (MqttException e) {
                 System.out.println("Excepcion PublicarLocal  "+e.toString());
                 try {
-                    if(!clientLocal.isConnected()) clientLocal.reconnect();
-                    clientLocal.publish(nameAlerta, messageMQTT);
+                    if(!clientLocal[hilo].isConnected()) Thread.sleep(700+(int)Math.random()*600);
+		    semaphore.acquire();
+                    clientLocal[hilo].publish(nameAlerta, messageMQTT);
+		    semaphore.release();
                 } catch (MqttException e1) {
+                    System.out.println("Excepcion MqttException  "+e1.toString());
+                    e1.printStackTrace();
+                } catch (InterruptedException e1) {
+                    System.out.println("Excepcion InterruptedException  "+e1.toString());
                     e1.printStackTrace();
                 }
             }
         }else {
-            ConnectClient_Local("tcp://localhost");
+            System.out.println("Excepcion Conectando!!  ");
+            ConnectClient_Local(hilo,"tcp://localhost");
             try {
-                clientLocal.publish(nameAlerta, messageMQTT);
+                Thread.sleep(700+(int)Math.random()*600);
+		semaphore.acquire();
+                clientLocal[hilo].publish(nameAlerta, messageMQTT);
+		semaphore.release();
+                //System.out.println("Excepcion publish1  ");
             } catch (MqttException e) {
+                System.out.println("Excepcion MqttException PublicarLocal  "+e.toString());
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                System.out.println("Excepcion InterruptedException PublicarLocal  "+e.toString());
                 e.printStackTrace();
             }
         }
     }
 
-
-    public static void ConnectClient_Global(String serverURI) {
+    public static void ConnectClient_Global(int hilo,String serverURI){
         try {
-            clientGlobal = new MqttClient(serverURI, MqttClient.generateClientId());
+            clientGlobal[hilo] = new MqttAsyncClient(serverURI, MqttClient.generateClientId());
             MqttConnectOptions options = new MqttConnectOptions();
             options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
-            options.setCleanSession(false);
+            options.setCleanSession(true);
             options.setUserName(getUser());
             options.setPassword(getPassword().toCharArray());
-            clientGlobal.connect(options);
+            options.setAutomaticReconnect(true);
+            options.setMaxInflight(getMaxiAlarms());
+            clientGlobal[hilo].connect(options);
+            System.out.println("MQTT cliente global conectando");
         } catch (MqttException e) {
-            System.out.println("Excepcion Connectando Local "+e.toString());
+            System.out.println("Excepcion Connectando Global "+e.toString());
         }
-
     }
 
-    public static void PublicarGlobal(String nameAlerta, String mensaje){
+    public static void PublicarGlobal(int hilo, String nameAlerta, String mensaje){
         MqttMessage messageMQTT = new MqttMessage();
         messageMQTT.setPayload(mensaje.getBytes());
-        if(clientGlobal!=null){
+        //System.out.println("publicando PublicarLocal "+mensaje);
+        if(clientGlobal[hilo]!=null){
+            //System.out.println("publicando"+clientGlobal[hilo].isConnected()+" PublicarGlobal "+mensaje);
             try {
-                clientGlobal.publish(nameAlerta, messageMQTT);
+                clientGlobal[hilo].publish(nameAlerta, messageMQTT);
             } catch (MqttException e) {
-                System.out.println("Excepcion PublicarGlobal "+e.toString());
+                System.out.println("Excepcion PublicarGlobal  "+e.toString());
                 try {
-                    if(!clientGlobal.isConnected())clientGlobal.reconnect();
-                    clientGlobal.publish(nameAlerta, messageMQTT);
+                    if(!clientGlobal[hilo].isConnected()) Thread.sleep(700+(int)Math.random()*600);
+		    semaphore.acquire();
+                    clientGlobal[hilo].publish(nameAlerta, messageMQTT);
+                    semaphore.release();
                 } catch (MqttException e1) {
+                    System.out.println("Excepcion MqttException  "+e1.toString());
+                    e1.printStackTrace();
+                } catch (InterruptedException e1) {
+                    System.out.println("Excepcion InterruptedException  "+e1.toString());
                     e1.printStackTrace();
                 }
             }
         }else {
-            Utils.ConnectClient_Global("tcp://190.119.192.232");
+            //System.out.println("Excepcion Conectando!!  ");
+            ConnectClient_Global(hilo,"tcp://190.119.192.232");
             try {
-                clientGlobal.publish(nameAlerta, messageMQTT);
+                Thread.sleep(700+(int)Math.random()*600);
+		semaphore.acquire();
+                clientGlobal[hilo].publish(nameAlerta, messageMQTT);
+		semaphore.release();
+                //System.out.println("Excepcion publish1  ");
             } catch (MqttException e) {
+                System.out.println("Excepcion MqttException PublicarGlobal "+e.toString());
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                System.out.println("Excepcion InterruptedException PublicarGlobal  "+e.toString());
                 e.printStackTrace();
             }
         }
@@ -127,4 +181,28 @@ public class Utils {
     public static String getTopicSimple4() {
         return topicSimple4;
     }
+
+    /*public static MqttAsyncClient[] Connect_all(String serverURI){
+        MqttAsyncClient cliente[] = new MqttAsyncClient[5];
+        for(int i=0;i<cliente.length;i++){
+            try {
+                cliente[i] = new MqttAsyncClient(serverURI, MqttClient.generateClientId());
+                MqttConnectOptions options = new MqttConnectOptions();
+                options.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1_1);
+                options.setCleanSession(true);
+                options.setUserName(getUser());
+                options.setPassword(getPassword().toCharArray());
+                options.setAutomaticReconnect(true);
+                options.setMaxInflight(getMaxiAlarms());
+                cliente[i].connect(options);
+		System.out.println("Intento conectarme "+i);
+            } catch (MqttException e) {
+                System.out.println("No pude conectarme GIO "+i);
+                e.printStackTrace();
+            }
+
+        }
+        return cliente;
+    }*/
 }
+
