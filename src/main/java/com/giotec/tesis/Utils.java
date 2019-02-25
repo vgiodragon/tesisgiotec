@@ -76,9 +76,11 @@ public class Utils {
         if(clientLocal[hilo]!=null){
             //System.out.println("publicando"+clientLocal[hilo].isConnected()+" PublicarLocal "+mensaje);
             try {
+		//semaphore.acquire();
                 clientLocal[hilo].publish(nameAlerta, messageMQTT);
+		//semaphore.acquire();
             } catch (MqttException e) {
-                System.out.println("Excepcion PublicarLocal  "+e.toString());
+                //System.out.println("Excepcion PublicarLocal  "+e.toString());
                 try {
                     if(!clientLocal[hilo].isConnected()) Thread.sleep(700+(int)Math.random()*600);
 		    semaphore.acquire();
@@ -91,20 +93,24 @@ public class Utils {
                     System.out.println("Excepcion InterruptedException  "+e1.toString());
                     e1.printStackTrace();
                 }
-            }
+            }//catch (InterruptedException e) {
+               // System.out.println("Excepcion InterruptedException PublicarLocal  "+e.toString());
+                //e.printStackTrace();
+            //}
         }else {
             System.out.println("Excepcion Conectando!!  ");
             ConnectClient_Local(hilo,"tcp://localhost");
             try {
                 Thread.sleep(700+(int)Math.random()*600);
-		semaphore.acquire();
-                clientLocal[hilo].publish(nameAlerta, messageMQTT);
-		semaphore.release();
+		//semaphore.acquire();
+                //clientLocal[hilo].publish(nameAlerta, messageMQTT);
+		//semaphore.release();
+                PublicarLocal(hilo, nameAlerta,mensaje);
                 //System.out.println("Excepcion publish1  ");
-            } catch (MqttException e) {
+            } /*catch (MqttException e) {
                 System.out.println("Excepcion MqttException PublicarLocal  "+e.toString());
                 e.printStackTrace();
-            } catch (InterruptedException e) {
+            } */catch (InterruptedException e) {
                 System.out.println("Excepcion InterruptedException PublicarLocal  "+e.toString());
                 e.printStackTrace();
             }
@@ -135,7 +141,9 @@ public class Utils {
         if(clientGlobal[hilo]!=null){
             //System.out.println("publicando"+clientGlobal[hilo].isConnected()+" PublicarGlobal "+mensaje);
             try {
+                //semaphore.acquire();
                 clientGlobal[hilo].publish(nameAlerta, messageMQTT);
+                //semaphore.release();
             } catch (MqttException e) {
                 System.out.println("Excepcion PublicarGlobal  "+e.toString());
                 try {
@@ -150,20 +158,24 @@ public class Utils {
                     System.out.println("Excepcion InterruptedException  "+e1.toString());
                     e1.printStackTrace();
                 }
-            }
+            }//catch (InterruptedException e) {
+               // System.out.println("Excepcion InterruptedException PublicarLocal  "+e.toString());
+                //e.printStackTrace();
+            //}
         }else {
             //System.out.println("Excepcion Conectando!!  ");
-            ConnectClient_Global(hilo,"tcp://190.119.192.232");
+            ConnectClient_Global(hilo,"tcp://190.119.193.201");
             try {
                 Thread.sleep(700+(int)Math.random()*600);
-		semaphore.acquire();
-                clientGlobal[hilo].publish(nameAlerta, messageMQTT);
-		semaphore.release();
+		//semaphore.acquire();
+                //clientGlobal[hilo].publish(nameAlerta, messageMQTT);
+		//semaphore.release();
+                PublicarGlobal (hilo, nameAlerta, mensaje);
                 //System.out.println("Excepcion publish1  ");
-            } catch (MqttException e) {
+            } /*catch (MqttException e) {
                 System.out.println("Excepcion MqttException PublicarGlobal "+e.toString());
                 e.printStackTrace();
-            } catch (InterruptedException e) {
+            } */catch (InterruptedException e) {
                 System.out.println("Excepcion InterruptedException PublicarGlobal  "+e.toString());
                 e.printStackTrace();
             }

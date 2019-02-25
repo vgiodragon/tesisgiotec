@@ -14,6 +14,7 @@ mhora=$(date +%H:%M:%S.%N)
 #echo "core $e_core"
 #echo "ram $e_ram"
 
-mcpu=$(top -bn 2 -d 0.8 | grep '^%Cpu' | tail -n 1 | gawk '{print $2+$4+$6}')
-echo "$mhora,$e_core,$e_ram,$mcpu" >> perfs/$1.csv
+mcpu=$(top -bn 2 -d 0.7 | grep '^%Cpu' | tail -n 1 | gawk '{print $2+$4+$6}')
+mem_used=$(top -bn 2 -d 0.3 | grep '^KiB Mem' | tail -n 1 | gawk '{print $6}')
+echo "$mhora,$mcpu,$mem_used" >> perfs/$1.csv
 

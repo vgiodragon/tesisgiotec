@@ -30,23 +30,22 @@ def create_publicar(nalarma,value):
         time.sleep(1)
         _thread.start_new_thread( publicar, (topico, json.dumps(data), "localhost",myauth,) ) #publico en local!
     try:
-        _thread.start_new_thread( publicar, (topico, json.dumps(data), "190.119.192.232",myauth,) ) #publico en global!
+        _thread.start_new_thread( publicar, (topico, json.dumps(data), "190.119.193.201",myauth,) ) #publico en global!
     except Exception as e:
         time.sleep(1)
-        _thread.start_new_thread( publicar, (topico, json.dumps(data), "190.119.192.232",myauth,) ) #publico en global!
+        _thread.start_new_thread( publicar, (topico, json.dumps(data), "190.119.193.201",myauth,) ) #publico en global!
 
 def main():
     talarmas = int(sys.argv[1])
     cont = 30.0
-    time.sleep(7)
+    time.sleep(5)
     print("Inicio Simulador Envios "+str(datetime.datetime.now()))
     for tanda in range(0,30):
         value = cont + (tanda%3)
         for nalarma in range(0,talarmas):
             create_publicar(nalarma,value)
-        time.sleep(20-talarmas/(100))
+        time.sleep(19-talarmas/(100))
     print("Fin Simulador Envios "+str(datetime.datetime.now()))
 
 if __name__ == "__main__":
     main()
-

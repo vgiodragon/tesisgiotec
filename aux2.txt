@@ -1,0 +1,58 @@
+[INFO] Scanning for projects...
+[INFO]                                                                         
+[INFO] ------------------------------------------------------------------------
+[INFO] Building Flink Quickstart Job 1.0-SNAPSHOT
+[INFO] ------------------------------------------------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:2.5:clean (default-clean) @ tesis-giotec ---
+[INFO] Deleting /home/pi/tesisgiotec/target
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:resources (default-resources) @ tesis-giotec ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] Copying 1 resource
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:compile (default-compile) @ tesis-giotec ---
+[INFO] Changes detected - recompiling the module!
+[INFO] Compiling 5 source files to /home/pi/tesisgiotec/target/classes
+[INFO] 
+[INFO] --- maven-resources-plugin:2.6:testResources (default-testResources) @ tesis-giotec ---
+[INFO] Using 'UTF-8' encoding to copy filtered resources.
+[INFO] skip non existing resourceDirectory /home/pi/tesisgiotec/src/test/resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.1:testCompile (default-testCompile) @ tesis-giotec ---
+[INFO] No sources to compile
+[INFO] 
+[INFO] --- maven-surefire-plugin:2.17:test (default-test) @ tesis-giotec ---
+[INFO] No tests to run.
+[INFO] 
+[INFO] --- maven-jar-plugin:2.4:jar (default-jar) @ tesis-giotec ---
+[INFO] Building jar: /home/pi/tesisgiotec/target/tesis-giotec-1.0-SNAPSHOT.jar
+[INFO] 
+[INFO] --- maven-shade-plugin:3.0.0:shade (default) @ tesis-giotec ---
+[INFO] Excluding org.slf4j:slf4j-api:jar:1.7.15 from the shaded jar.
+[INFO] Excluding org.apache.flink:force-shading:jar:1.7.1 from the shaded jar.
+[INFO] Including org.apache.flink:flink-shaded-guava:jar:18.0-5.0 in the shaded jar.
+[INFO] Including org.apache.flink:flink-cep_2.11:jar:1.7.1 in the shaded jar.
+[INFO] Excluding org.slf4j:slf4j-log4j12:jar:1.7.7 from the shaded jar.
+[INFO] Excluding log4j:log4j:jar:1.2.17 from the shaded jar.
+[INFO] Including org.eclipse.paho:org.eclipse.paho.client.mqttv3:jar:1.2.0 in the shaded jar.
+[INFO] Including org.json:json:jar:20160212 in the shaded jar.
+[INFO] Replacing original artifact with shaded artifact.
+[INFO] Replacing /home/pi/tesisgiotec/target/tesis-giotec-1.0-SNAPSHOT.jar with /home/pi/tesisgiotec/target/tesis-giotec-1.0-SNAPSHOT-shaded.jar
+[INFO] Dependency-reduced POM written at: /home/pi/tesisgiotec/dependency-reduced-pom.xml
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time: 13.297 s
+[INFO] Finished at: 2019-02-23T09:51:51-05:00
+[INFO] Final Memory: 18M/51M
+[INFO] ------------------------------------------------------------------------
+No taskexecutor daemon to stop on host raspberrypi.
+No standalonesession daemon to stop on host raspberrypi.
+Starting cluster.
+Starting standalonesession daemon on host raspberrypi.
+Starting taskexecutor daemon on host raspberrypi.
+Ejecutando...
+Inicio 09:52:07 
+Starting execution of program
+Ready!
